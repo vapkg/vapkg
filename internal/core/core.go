@@ -2,7 +2,7 @@ package core
 
 const (
 	Name    = "vapkg"
-	License = "Apache License, Version 3.0"
+	License = "GNU GPL v3.0"
 	Author  = "rejchev"
 	URL     = "https://github.com/rejchev/vapkg"
 	Version = "0.0.1"
