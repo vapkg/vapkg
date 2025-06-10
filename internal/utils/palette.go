@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-const vaPrefix = "{VAPKG}[vapkg]{R}"
+const vaPrefix = "{VAPKG}[vapkg]{R}:"
 const vaColor = "{VAPKG}"
 
 // Disclaimer:

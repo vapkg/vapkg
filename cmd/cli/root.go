@@ -18,26 +18,26 @@ var emptyCommand = core.Command{
 	},
 }
 
-func emptyCommandHandleFn(ctx *core.Context, opts map[string]string) error {
+func emptyCommandHandleFn(ctx *core.Context, opts map[string]string) (err error) {
+	//ctx.Logger().Debugf("root cmd called")
 
-	var buf string
 	for k := range opts {
 		switch k {
 		case "version":
-			buf = fmt.Sprintf("%s version: %s", ctx.Core().Name(), ctx.Core().Version())
+			_, err = utils.VaPrintf("version: %s", ctx.Core().Version())
 		case "author":
-			buf = fmt.Sprintf("%s author: %s", ctx.Core().Name(), ctx.Core().Author())
+			_, err = utils.VaPrintf("author: %s", ctx.Core().Author())
 		case "source":
-			buf = fmt.Sprintf("%s source: %s", ctx.Core().Name(), ctx.Core().URL())
+			_, err = utils.VaPrintf("source: %s", ctx.Core().URL())
 		case "license":
-			buf = fmt.Sprintf("%s license: %s", ctx.Core().Name(), ctx.Core().License())
+			_, err = utils.VaPrintf("license: %s", ctx.Core().License())
+		default:
+			err = fmt.Errorf("unknown option %s", k)
+			continue
 		}
+
 		break
 	}
 
-	if buf != "" {
-		utils.VaPrintf("%s\n", buf)
-	}
-
-	return nil
+	return err
 }

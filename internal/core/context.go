@@ -1,10 +1,13 @@
 package core
 
+import "vapkg/internal/utils"
+
 type Context struct {
 	core     Core
 	pwd      string
 	ws       Workspace
 	commands CommandRegistry
+	logger   utils.Logger
 }
 
 func CreateContext(pwd string) Context {
@@ -17,6 +20,7 @@ func NewContext(pwd string) *Context {
 		pwd:      pwd,
 		ws:       CreateWorkspace(pwd),
 		commands: CreateCommandRegistry(),
+		logger:   utils.CreateLogger(utils.InfoLog | utils.DebugLog | utils.WarnLog),
 	}
 }
 
@@ -34,4 +38,8 @@ func (ctx *Context) Pwd() string {
 
 func (ctx *Context) Core() ICore {
 	return &ctx.core
+}
+
+func (ctx *Context) Logger() utils.ILogger {
+	return &ctx.logger
 }
