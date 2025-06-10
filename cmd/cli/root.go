@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"vapkg/internal/core"
+	"vapkg/internal/utils"
 )
 
 var emptyCommand = core.Command{
@@ -35,7 +36,7 @@ func emptyCommandHandleFn(ctx *core.Context, opts map[string]string) error {
 	}
 
 	if buf != "" {
-		fmt.Printf("%s\n", buf)
+		utils.VaPrintf("%s\n", buf)
 	}
 
 	return nil
