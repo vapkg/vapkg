@@ -46,7 +46,7 @@ type VaPackageDependence struct {
 	// the name of the file to upload (optional)
 	// It is used if you attach packages to the release
 	// if not specified, the source code will be uploaded
-	Artifact string `json:"artifact,omitempty"`
+	Attachment string `json:"attachment,omitempty"`
 
 	// optional or not (optional :/)
 	Optional bool `json:"optional,omitempty"`
@@ -89,7 +89,7 @@ var vaPackagePattern = VaPackage{
 			Provider:   "github.com/rejchev",
 			Repository: "vapkg",
 			Tag:        "v0.0.1",
-			Artifact:   "vapkg-v001.tar.gz",
+			Attachment: "vapkg-v001.tar.gz",
 			Optional:   true,
 		},
 	},
