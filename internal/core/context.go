@@ -1,26 +1,31 @@
 package core
 
-import "vapkg/internal/utils"
+import (
+	"vapkg/internal/utils"
+)
 
 type Context struct {
 	core     Core
 	pwd      string
 	ws       Workspace
 	commands CommandRegistry
-	logger   utils.Logger
+	logger   utils.ILogger
 }
 
-func CreateContext(pwd string) Context {
-	return *NewContext(pwd)
-}
+func NewContext(pwd string, cfg *Config) *Context {
+	var err error
+	var logger utils.ILogger
 
-func NewContext(pwd string) *Context {
+	if logger, err = utils.CreateActualLogger(cfg.BinFolder, cfg.LogLevel); err != nil {
+		return nil
+	}
+
 	return &Context{
 		core:     CreateCore(),
 		pwd:      pwd,
 		ws:       CreateWorkspace(pwd),
 		commands: CreateCommandRegistry(),
-		logger:   utils.CreateLogger(utils.InfoLog | utils.DebugLog | utils.WarnLog),
+		logger:   logger,
 	}
 }
 
@@ -41,5 +46,11 @@ func (ctx *Context) Core() ICore {
 }
 
 func (ctx *Context) Logger() utils.ILogger {
-	return &ctx.logger
+	return ctx.logger
+}
+
+func (ctx *Context) Close() {
+	if ctx.logger != nil {
+		ctx.logger.Close()
+	}
 }
