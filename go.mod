@@ -6,7 +6,6 @@ toolchain go1.23.5
 
 require github.com/go-resty/resty/v2 v2.16.5
 
-require github.com/spf13/viper v1.20.1
 
 require github.com/rejchev/palette/v2 v2.0.2
 

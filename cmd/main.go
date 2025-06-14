@@ -3,7 +3,9 @@ package main
 import (
 	"os"
 	"vapkg/cmd/cli"
+	cfg "vapkg/internal/config"
 	"vapkg/internal/core"
+	"vapkg/internal/logger"
 	"vapkg/internal/utils"
 )
 
@@ -25,14 +27,8 @@ func main() {
 		return
 	}
 
-	var config *core.Config
-	if config, err = core.GetConfig(); err != nil {
-		utils.VaPrintf("{FRD}config initialization failed (%s){R}\n", err)
-		return
-	}
-
 	var ctx *core.Context
-	if ctx = getContext(config); ctx == nil {
+	if ctx = getContext(cfg.Get()); ctx == nil {
 		utils.VaPrintf("{FRD}ctx init err {R}(%s)\n", err)
 		return
 	}
@@ -49,14 +45,27 @@ func main() {
 	}
 }
 
-func getContext(cfg *core.Config) *core.Context {
-	if pwd, err := os.Getwd(); err == nil {
+func getContext(cfg core.IConfig) (ctx *core.Context) {
+	if log := getLogger(cfg); log != nil {
 
-		ctx := core.NewContext(pwd, cfg)
+		if ctx = core.NewContext(log, cfg); ctx != nil {
 
-		for k, v := range cli.Commands() {
-			ctx.Commands().Register(k, v)
+			for k, v := range cli.Commands() {
+				ctx.Commands().Register(k, v)
+			}
+
+			log.Infof("Context initialized with %d command(s)", len(cli.Commands()))
 		}
+
+	}
+
+	return
+}
+
+func getLogger(cfg core.IConfig) core.ILogger {
+	if log, err := logger.NewActualFromConfig(cfg); err == nil {
+		log.Infof("Logger initialized")
+		return log
 	}
 
 	return nil

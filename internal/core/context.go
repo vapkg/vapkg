@@ -1,32 +1,33 @@
 package core
 
-import (
-	"vapkg/internal/utils"
-)
+import "os"
 
 type Context struct {
-	core     Core
-	pwd      string
-	ws       Workspace
-	commands CommandRegistry
-	logger   utils.ILogger
+	config    IConfig
+	core      Core
+	pwd       string
+	ws        Workspace
+	commands  CommandRegistry
+	providers ProviderRegistry
+	logger    ILogger
 }
 
-func NewContext(pwd string, cfg *Config) *Context {
-	var err error
-	var logger utils.ILogger
+func NewContext(logger ILogger, cfg IConfig) *Context {
 
-	if logger, err = utils.CreateActualLogger(cfg.LogFolder, cfg.LogLevel); err != nil {
-		return nil
+	if pwd, err := os.Getwd(); err == nil {
+
+		return &Context{
+			config:    cfg,
+			core:      CreateCore(),
+			pwd:       pwd,
+			ws:        CreateWorkspace(pwd),
+			commands:  CreateCommandRegistry(),
+			providers: CreateProviderRegistry(),
+			logger:    logger,
+		}
 	}
 
-	return &Context{
-		core:     CreateCore(),
-		pwd:      pwd,
-		ws:       CreateWorkspace(pwd),
-		commands: CreateCommandRegistry(),
-		logger:   logger,
-	}
+	return nil
 }
 
 func (ctx *Context) Commands() *CommandRegistry {
@@ -45,8 +46,16 @@ func (ctx *Context) Core() ICore {
 	return &ctx.core
 }
 
-func (ctx *Context) Logger() utils.ILogger {
+func (ctx *Context) Logger() ILogger {
 	return ctx.logger
+}
+
+func (ctx *Context) Providers() *ProviderRegistry {
+	return &ctx.providers
+}
+
+func (ctx *Context) Config() IConfig {
+	return ctx.config
 }
 
 func (ctx *Context) Close() {

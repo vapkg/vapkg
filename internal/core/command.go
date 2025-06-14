@@ -1,6 +1,8 @@
 package core
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // ctx + opts with value
 type CommandHandlerFn func(*Context, map[string]string) error

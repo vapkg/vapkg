@@ -5,6 +5,13 @@ import (
 	"os"
 )
 
+type ProviderType string
+
+const (
+	GitProvider ProviderType = "git"
+	PtrProvider ProviderType = "ptr"
+)
+
 // About author struct
 type VaPackageAuthor struct {
 

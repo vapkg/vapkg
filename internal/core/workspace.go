@@ -62,6 +62,10 @@ func (ws *Workspace) Path() string {
 	return ws.path
 }
 
+func (ws *Workspace) Pkg() *VaPackage {
+	return ws.pkg
+}
+
 func pathWithPackageName(path string) string {
 	return filepath.Join(path, PackageName+"."+PackageExtension)
 }
