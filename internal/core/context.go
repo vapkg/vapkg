@@ -16,7 +16,7 @@ func NewContext(pwd string, cfg *Config) *Context {
 	var err error
 	var logger utils.ILogger
 
-	if logger, err = utils.CreateActualLogger(cfg.BinFolder, cfg.LogLevel); err != nil {
+	if logger, err = utils.CreateActualLogger(cfg.LogFolder, cfg.LogLevel); err != nil {
 		return nil
 	}
 
