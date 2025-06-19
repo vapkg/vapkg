@@ -6,8 +6,9 @@ import (
 )
 
 var commandsMap = map[string]*core.Command{
-	"":     &emptyCommand,
-	"init": &initCommand,
+	"":         &emptyCommand,
+	"init":     &initCommand,
+	"download": &downloadCommand,
 }
 
 func Commands() map[string]*core.Command {
