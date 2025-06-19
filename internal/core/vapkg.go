@@ -2,15 +2,22 @@ package core
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 )
 
 type ProviderType string
 
 const (
-	GitProvider ProviderType = "git"
-	PtrProvider ProviderType = "ptr"
+	HttpGitProvider ProviderType = "http-git"
+	HttpPtrProvider ProviderType = "http-ptr"
 )
+
+const VapkgShortDependencyPattern = "%s@%s"
+
+func GetVaPackageDepShorten(dep *VaPackageDependence) string {
+	return fmt.Sprintf(VapkgShortDependencyPattern, dep.Repository, dep.Tag)
+}
 
 // About author struct
 type VaPackageAuthor struct {
@@ -86,7 +93,7 @@ var vaPackagePattern = VaPackage{
 	Providers: map[string]VaPackageProvider{
 		"github.com/rejchev": {
 			Name: "Rejchev's GitHub",
-			Type: "git",
+			Type: "http-git",
 			Url:  "https://github.com/rejchev",
 		},
 	},
@@ -96,7 +103,7 @@ var vaPackagePattern = VaPackage{
 			Provider:   "github.com/rejchev",
 			Repository: "vapkg",
 			Tag:        "v0.0.1",
-			Attachment: "vapkg-v001.tar.gz",
+			Attachment: "jansson-1.7.3.125-windows-latest.zip",
 			Optional:   true,
 		},
 	},

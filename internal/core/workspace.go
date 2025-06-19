@@ -2,7 +2,6 @@ package core
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 )
 
@@ -39,13 +38,13 @@ func NewWorkspace(path string) *Workspace {
 
 func (ws *Workspace) Init(name string) error {
 
-	var exists bool
-	for _, v := range gameIRequired {
-		if _, err := os.Stat(filepath.Join(ws.path, v)); !os.IsNotExist(err) {
-			exists = true
-			break
-		}
-	}
+	var exists bool = true
+	//for _, v := range gameIRequired {
+	//	if _, err := os.Stat(filepath.Join(ws.path, v)); !os.IsNotExist(err) {
+	//		exists = true
+	//		break
+	//	}
+	//}
 
 	if !exists {
 		return fmt.Errorf("required gameinfo.<ext> file isn't found")

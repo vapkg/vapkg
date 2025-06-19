@@ -32,7 +32,7 @@ func (c *Command) Execute(ctx *Context, opts map[string]string) error {
 		}
 
 		if _, ok := opts[k]; !ok {
-			return fmt.Errorf("missing required option %s", k)
+			return fmt.Errorf("option '%s%s' is required", OptionPrefix, k)
 		}
 	}
 

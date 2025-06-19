@@ -4,20 +4,25 @@ import (
 	"os"
 )
 
+type IHttpProvider interface {
+	Type() ProviderType
+	GetPath(dep *VaPackageDependence) (string, error)
+}
+
 type ProviderHandlerFn func(ctx *Context, depIdx int, outp string) *os.File
 
 type ProviderRegistry struct {
-	providers map[string]ProviderHandlerFn
+	providers map[ProviderType]IHttpProvider
 }
 
 func NewProviderRegistry() *ProviderRegistry {
-	return &ProviderRegistry{make(map[string]ProviderHandlerFn)}
+	return &ProviderRegistry{make(map[ProviderType]IHttpProvider)}
 }
 
 func CreateProviderRegistry() ProviderRegistry {
-	return ProviderRegistry{make(map[string]ProviderHandlerFn)}
+	return ProviderRegistry{make(map[ProviderType]IHttpProvider)}
 }
 
-func (r *ProviderRegistry) Register(name string, fn ProviderHandlerFn) {
-	r.providers[name] = fn
+func (r *ProviderRegistry) Register(t ProviderType, inst IHttpProvider) {
+	r.providers[t] = inst
 }

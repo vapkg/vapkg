@@ -12,4 +12,5 @@ type IConfig interface {
 	LogFolder() string
 	BinFolder() string
 	EnvType() EnvType
+	CacheFolder() string
 }
