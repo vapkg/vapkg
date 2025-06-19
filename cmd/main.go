@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 	"vapkg/cmd/cli"
-	cfg "vapkg/internal/config"
+	cfg "vapkg/config"
 	"vapkg/internal/core"
 	"vapkg/internal/logger"
 	"vapkg/internal/utils"
@@ -40,7 +40,7 @@ func main() {
 	}
 
 	if err = ctx.Commands().Get(cliInstance.Command()).Execute(ctx, cliInstance.Options()); err != nil {
-		utils.VaPrintf("%s\n", err)
+		utils.VaPrintfWithPrefix("%s\n", err)
 		return
 	}
 }
@@ -52,6 +52,10 @@ func getContext(cfg core.IConfig) (ctx *core.Context) {
 
 			for k, v := range cli.Commands() {
 				ctx.Commands().Register(k, v)
+			}
+
+			for k, v := range ProviderMap {
+				ctx.Providers().Register(k, v)
 			}
 
 			log.Infof("Context initialized with %d command(s)", len(cli.Commands()))
