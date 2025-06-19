@@ -11,6 +11,7 @@ type Container struct {
 	LogLevel core.LogType `mapstructure:"VAPKG_LOGLEVEL"`
 	Log      string       `mapstructure:"VAPKG_LOG"`
 	Env      core.EnvType `mapstructure:"VAPKG_ENV"`
+	Cache    string       `mapstructure:"VAPKG_CACHE"`
 }
 
 type Config struct {
@@ -29,6 +30,7 @@ func Get() core.IConfig {
 		Log:      GetLog(),
 		LogLevel: GetLogType(),
 		Env:      GetEnvironment(),
+		Cache:    GetCache(),
 	})
 }
 
@@ -46,6 +48,10 @@ func (c *Config) EnvType() core.EnvType {
 
 func (c *Config) LogLevel() core.LogType {
 	return c.container.LogLevel
+}
+
+func (c *Config) CacheFolder() string {
+	return c.container.Cache
 }
 
 func GetLogType() core.LogType {
@@ -84,4 +90,12 @@ func GetEnvironment() core.EnvType {
 	}
 
 	return core.Production
+}
+
+func GetCache() string {
+	if val := os.Getenv("VAPKG_CACHE"); val != "" {
+		return val
+	}
+
+	return "bin/vapkg"
 }
