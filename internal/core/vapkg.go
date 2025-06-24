@@ -4,19 +4,21 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 )
 
-type ProviderType string
-
-const (
-	HttpGitProvider ProviderType = "http-git"
-	HttpPtrProvider ProviderType = "http-ptr"
-)
-
-const VapkgShortDependencyPattern = "%s@%s"
+const VaPackageShortDependencySeparator = "@"
 
 func GetVaPackageDepShorten(dep *VaPackageDependence) string {
-	return fmt.Sprintf(VapkgShortDependencyPattern, dep.Repository, dep.Tag)
+	return fmt.Sprintf("%s%s%s", dep.Repository, VaPackageShortDependencySeparator, dep.Tag)
+}
+
+func GetVaPackageDepFromShorten(val string) (string, string) {
+	if idx := strings.Index(val, VaPackageShortDependencySeparator); idx != -1 {
+		return val[:idx], val[idx+1:]
+	}
+
+	return val, "latest"
 }
 
 // About author struct
@@ -36,7 +38,7 @@ type VaPackageAuthor struct {
 type VaPackageProvider struct {
 
 	// supported types: git ( so far so -_-)
-	Type string `json:"type"`
+	Type ProviderType `json:"type"`
 
 	// name
 	Name string `json:"name"`

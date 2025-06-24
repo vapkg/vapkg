@@ -5,6 +5,6 @@ import (
 	"vapkg/internal/providers"
 )
 
-var ProviderMap = map[core.ProviderType]core.IHttpProvider{
-	core.HttpGitProvider: providers.NewGitHttpProvider(),
+var ProviderMap = map[core.ProviderType]core.ProviderFactoryFn{
+	providers.GitHttpProviderType: providers.NewGitHttpProviderA,
 }
