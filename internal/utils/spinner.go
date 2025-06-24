@@ -2,10 +2,7 @@ package utils
 
 type ProgressionPrinter struct {
 	spinner  []string
-	rate     uint32
-	spinRate uint32
 	isActive bool
-	message  string
 }
 
 // []string{"| ", "/ ", "- ", "\\ "}
@@ -15,7 +12,7 @@ func NewSpinnerPrinter(seq []string) *ProgressionPrinter {
 	return &ProgressionPrinter{spinner: seq}
 }
 
-func (p *ProgressionPrinter) Start(updateRate uint32) error {
+func (p *ProgressionPrinter) Start(updateRate uint32, msg string) {
 	p.isActive = true
 
 	go func() {
@@ -30,9 +27,7 @@ func (p *ProgressionPrinter) Start(updateRate uint32) error {
 					idx = 0
 				}
 
-				if p.message != "" {
-					_, _ = VaPrint("\r", p.spinner[idx], p.message)
-				}
+				_, _ = VaPrint("\r", p.spinner[idx], msg)
 
 				nextSpinTick = tickCounter + uint64(updateRate)
 			}
@@ -40,14 +35,6 @@ func (p *ProgressionPrinter) Start(updateRate uint32) error {
 			tickCounter++
 		}
 	}()
-
-	return nil
-}
-
-func (p *ProgressionPrinter) Write(text string) {
-	if p.isActive {
-		p.message = text
-	}
 }
 
 func (p *ProgressionPrinter) Stop() {
