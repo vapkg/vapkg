@@ -2,8 +2,14 @@ package cli
 
 import (
 	"fmt"
+	"os"
+	"path"
+	"time"
 	"vapkg/internal/core"
+	"vapkg/internal/utils"
 )
+
+var spinner = utils.NewSpinnerPrinter([]string{"| ", "/ ", "- ", "\\ "})
 
 var downloadCommand = core.Command{
 	Usage:       "vapkg download [--<option>[, ...]]",
@@ -22,25 +28,46 @@ func downloadCommandHandleFn(ctx *core.Context, opts map[string]string) error {
 		return fmt.Errorf("vapkg must be inited")
 	}
 
-	var dep string
-	if dep = getValue("", opts); dep == "" {
-		return fmt.Errorf("...")
+	var repo, ver, attachment = "", "", getValue("attachment", opts)
+	if repo, ver = core.GetVaPackageDepFromShorten(getValue("", opts)); repo == "" {
+		return fmt.Errorf("expected dependency shorten format: <dep>@<ver> | <dep>")
 	}
 
-	var attachment, pvKey = getValue("attachment", opts), ""
+	dep := &core.VaPackageDependence{Repository: repo, Tag: ver, Attachment: attachment}
 
+	var pvKey string
 	if pvKey = getValue("provider", opts); pvKey == "" {
 		return fmt.Errorf("--provider is required")
 	}
 
-	var provider *core.VaPackageProvider
-	if provider = getProvider(ctx, pvKey); provider == nil {
-		return fmt.Errorf("unknown provider '%s', it must be declared on vapkg", pvKey)
+	var err error
+	var provider core.IProvider
+	if provider, err = getProvider(ctx, pvKey); err != nil {
+		return fmt.Errorf("%s", err)
 	}
 
-	ctx.Logger().Infof("Download command called with: packet='%s'; attachment='%s'; prv='%s'", dep, attachment, pvKey)
+	ctx.Logger().Infof("Download command called with: packet='%s@%s'; attachment='%s'; prv='%s'", repo, ver, attachment, pvKey)
 
-	return nil
+	out := getCachePath(ctx, pvKey, dep, provider.GetFile(dep))
+
+	ctx.Logger().Infof("Download command called with: '%s'; attachment='%s'", out, attachment)
+
+	return downloadWithSpinner(out, provider, dep)
+}
+
+func downloadWithSpinner(dest string, provider core.IProvider, dep *core.VaPackageDependence) error {
+	spinner.Start(uint32(time.Second), utils.VaSprintf("downloading {FGR}%s{R}", core.GetVaPackageDepShorten(dep)))
+	err := utils.DownloadFile(provider.GetPath(dep), dest)
+	duration := spinner.Stop()
+
+	if err != nil {
+		return fmt.Errorf("%s", err)
+	}
+
+	_, _ = utils.VaPrintfWithPrefix("package {FGR}%s {R}as {FGR}%s {R}download completed in {FGR}%s{R}",
+		provider.GetFile(dep), core.GetVaPackageDepShorten(dep), duration)
+
+	return err
 }
 
 func getValue(key string, opts map[string]string) string {
@@ -51,10 +78,21 @@ func getValue(key string, opts map[string]string) string {
 	return ""
 }
 
-func getProvider(ctx *core.Context, key string) *core.VaPackageProvider {
-	if provider, ok := ctx.Ws().Pkg().Providers[key]; ok {
-		return &provider
+func getCachePath(ctx *core.Context, vaKey string, dep *core.VaPackageDependence, file string) string {
+	dirs := path.Join(ctx.Config().CacheFolder(), vaKey, dep.Repository, dep.Tag)
+	_ = os.MkdirAll(dirs, os.ModePerm)
+	return path.Join(dirs, file)
+}
+
+func getProvider(ctx *core.Context, key string) (core.IProvider, error) {
+	if vaProvider, ok := ctx.Ws().Pkg().Providers[key]; ok {
+
+		if !ctx.Providers().Exists(vaProvider.Type) {
+			return nil, fmt.Errorf("provider '%s' does not support", vaProvider.Type)
+		}
+
+		return ctx.Providers().Get(key, &vaProvider), nil
 	}
 
-	return nil
+	return nil, fmt.Errorf("provider key '%s' must be present onto vapkg.json providers", key)
 }
