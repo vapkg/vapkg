@@ -1,8 +1,11 @@
 package utils
 
+import "time"
+
 type ProgressionPrinter struct {
 	spinner  []string
 	isActive bool
+	start    time.Time
 }
 
 // []string{"| ", "/ ", "- ", "\\ "}
@@ -14,6 +17,7 @@ func NewSpinnerPrinter(seq []string) *ProgressionPrinter {
 
 func (p *ProgressionPrinter) Start(updateRate uint32, msg string) {
 	p.isActive = true
+	p.start = time.Now()
 
 	go func() {
 		tickCounter := uint64(0)
@@ -27,7 +31,7 @@ func (p *ProgressionPrinter) Start(updateRate uint32, msg string) {
 					idx = 0
 				}
 
-				_, _ = VaPrint("\r", p.spinner[idx], msg)
+				_, _ = VaPrint("\r", p.spinner[idx], VaSprintf("%s (%s)", msg, time.Since(p.start)))
 
 				nextSpinTick = tickCounter + uint64(updateRate)
 			}
@@ -37,12 +41,12 @@ func (p *ProgressionPrinter) Start(updateRate uint32, msg string) {
 	}()
 }
 
-func (p *ProgressionPrinter) Stop() {
+func (p *ProgressionPrinter) Stop() time.Duration {
 	if !p.isActive {
-		return
+		return 0
 	}
 
 	p.isActive = false
 	VaPrintf("\r")
-	return
+	return time.Since(p.start)
 }
