@@ -7,17 +7,17 @@ import (
 	"os"
 )
 
-func DownloadFile(filepath string, url string) error {
+func DownloadFile(from, to string) error {
 	var err error
 	var resp *http.Response
 
-	if resp, err = http.Head(url); err != nil {
+	if resp, err = http.Head(from); err != nil {
 		return err
 	}
 
 	size := resp.ContentLength
 
-	if resp, err = http.Get(url); err != nil {
+	if resp, err = http.Get(from); err != nil {
 		return err
 	}
 
@@ -26,7 +26,7 @@ func DownloadFile(filepath string, url string) error {
 	}(resp.Body)
 
 	var out *os.File
-	if out, err = os.Create(filepath); err != nil {
+	if out, err = os.Create(to); err != nil {
 		return err
 	}
 
@@ -34,22 +34,16 @@ func DownloadFile(filepath string, url string) error {
 		_ = v.Close()
 	}(out)
 
-	text := ""
 	length := 0
-	buf := make([]byte, size)
-	m, n := int64(0), int64(0)
+	buf := make([]byte, 1024)
+	n := int64(0)
 
 	for {
-		if length, err = resp.Body.Read(buf); err != nil {
+		if length, err = resp.Body.Read(buf); err != nil && err != io.EOF {
 			return err
 		}
 
 		n += int64(length)
-
-		if n-m > 1024*1024 {
-			m = n
-			_ = fmt.Sprintf("%s (%d %%)", text, 100*n/size) // spinner
-		}
 
 		if length == 0 {
 			break
@@ -61,7 +55,7 @@ func DownloadFile(filepath string, url string) error {
 	}
 
 	if size > 0 && n != size {
-		return fmt.Errorf("file %s has %d bytes instead of %d bytes", filepath, size, n)
+		return fmt.Errorf("file %s has %d bytes instead of %d bytes", to, size, n)
 	}
 
 	return nil
