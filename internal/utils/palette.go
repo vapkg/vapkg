@@ -46,11 +46,11 @@ func VaPrintlnWithPrefix(args ...any) (n int, err error) {
 }
 
 func VaPrintf(format string, args ...any) (n int, err error) {
-	return fmt.Fprintf(os.Stdout, VaSprintf(format, args...))
+	return fmt.Fprint(os.Stdout, VaSprintf(format, args...))
 }
 
 func VaPrintfWithPrefix(format string, args ...any) (n int, err error) {
-	return fmt.Fprintf(os.Stdout, VaSprintf("%s "+format, append([]any{VaPrefix()}, args...)...))
+	return fmt.Fprint(os.Stdout, VaSprintf("{R}%s "+format, append([]any{VaPrefix()}, args...)...))
 }
 
 func InitVaPalette() {

@@ -4,8 +4,16 @@ import (
 	"fmt"
 )
 
+const OptionPrefix = "--"
+
 // ctx + opts with value
-type CommandHandlerFn func(*Context, map[string]string) error
+type CommandHandlerFn func(c IContext, m map[string]string) error
+
+type ICommand interface {
+	Execute(ctx IContext, opts map[string]string) error
+}
+
+var _ ICommand = (*Command)(nil)
 
 type Command struct {
 	Usage       string
@@ -14,7 +22,7 @@ type Command struct {
 	Options     map[string]bool
 }
 
-func (c *Command) Execute(ctx *Context, opts map[string]string) error {
+func (c *Command) Execute(ctx IContext, opts map[string]string) error {
 
 	if ctx == nil {
 		return fmt.Errorf("context is nil")

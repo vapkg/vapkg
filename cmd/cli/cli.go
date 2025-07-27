@@ -6,9 +6,10 @@ import (
 )
 
 var commandsMap = map[string]*core.Command{
-	"":         &emptyCommand,
-	"init":     &initCommand,
-	"download": &downloadCommand,
+	"":        &emptyCommand,
+	"init":    &initCommand,
+	"install": &installCommand,
+	//"download": &downloadCommand,
 }
 
 func Commands() map[string]*core.Command {
@@ -20,15 +21,16 @@ type Cli struct {
 	options map[string]string
 }
 
-func Parse(args []string) Cli {
+func Parse(args []string) *Cli {
+	if args == nil {
+		return nil
+	}
 
-	var (
-		val string
-		key string
-		idx = 0
-	)
+	var val, key string
 
-	cli := Cli{"", make(map[string]string)}
+	cmd := ""
+	idx := 0
+	opts := make(map[string]string)
 
 	for i, arg := range args {
 
@@ -36,22 +38,22 @@ func Parse(args []string) Cli {
 		idx = strings.Index(key, core.OptionPrefix)
 
 		if i == 0 && idx != 0 {
-			cli.setCommand(key)
+			cmd = key
 			continue
 		}
 
-		if idx != 0 && len(cli.Command()) != 0 {
+		if idx != 0 && len(cmd) != 0 {
 			val = ""
 
-			if cli.Exists(key) {
-				val = cli.GetOption("")
+			if v, ok := opts[""]; ok {
+				val = v
 			}
 
 			if len(val) != 0 {
 				val += " "
 			}
 
-			cli.setOption("", val+key)
+			opts[""] = val + key
 		}
 
 		if idx != 0 {
@@ -67,10 +69,10 @@ func Parse(args []string) Cli {
 			idx = len(key)
 		}
 
-		cli.setOption(key[len(core.OptionPrefix):idx], val)
+		opts[key[len(core.OptionPrefix):idx]] = val
 	}
 
-	return cli
+	return &Cli{cmd, opts}
 }
 
 func (cli *Cli) setCommand(val string) {

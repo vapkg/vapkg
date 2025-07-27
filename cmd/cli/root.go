@@ -18,7 +18,7 @@ var emptyCommand = core.Command{
 	},
 }
 
-func emptyCommandHandleFn(ctx *core.Context, opts map[string]string) (err error) {
+func emptyCommandHandleFn(ctx core.IContext, opts map[string]string) (err error) {
 	//ctx.Logger().Debugf("root cmd called")
 
 	for k := range opts {

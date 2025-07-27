@@ -1,6 +1,10 @@
 package utils
 
-import "time"
+import (
+	"fmt"
+	"os"
+	"time"
+)
 
 type ProgressionPrinter struct {
 	spinner  []string
@@ -31,7 +35,7 @@ func (p *ProgressionPrinter) Start(updateRate uint32, msg string) {
 					idx = 0
 				}
 
-				_, _ = VaPrint("\r", p.spinner[idx], VaSprintf("%s (%s)", msg, time.Since(p.start)))
+				_, _ = fmt.Print("\r", p.spinner[idx], VaSprintf("%s (%s)", msg, time.Since(p.start)))
 
 				nextSpinTick = tickCounter + uint64(updateRate)
 			}
@@ -47,6 +51,6 @@ func (p *ProgressionPrinter) Stop() time.Duration {
 	}
 
 	p.isActive = false
-	VaPrintf("\r")
+	_, _ = fmt.Fprint(os.Stdout, "\r")
 	return time.Since(p.start)
 }

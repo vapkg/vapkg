@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"vapkg/internal/core"
+	"vapkg/internal/core/vapkg"
 )
 
 var initCommand = core.Command{
@@ -10,26 +11,38 @@ var initCommand = core.Command{
 	Description: "",
 	Handler:     initCommandHandleFn,
 	Options: map[string]bool{
-		"": false,
+		"":     false,
+		"type": false,
 	},
 }
 
-func initCommandHandleFn(ctx *core.Context, opts map[string]string) (err error) {
-	//ctx.Logger().Debugf("command '%s' called", "init")
+func initCommandHandleFn(ctx core.IContext, opts map[string]string) error {
+	ctx.Logger().Debugf("command '%s' called", "init")
 
-	if ctx.Ws().Exists() {
-		return fmt.Errorf("{FRD}project already exists{R}")
+	if ctx.Workspace().IsExist() {
+		ctx.Logger().Errorf("init call err then workspace already exists")
+		return fmt.Errorf("{FRD}workspace already exists")
 	}
 
-	name, ok := opts[""]
-
-	if !ok {
-		name = ""
+	if err := ctx.Workspace().CreateWorkspace(getPackageName(opts), getPackageType(opts)); err != nil {
+		ctx.Logger().Errorf("init call err then create workspace: %v", err)
+		return fmt.Errorf("{FRD}%s", err.Error())
 	}
 
-	if err = ctx.Ws().Init(name); err != nil {
-		err = fmt.Errorf("{FRD}init project fail {R}(%v)", err)
+	return nil
+}
+
+func getPackageName(opts map[string]string) string {
+	if v, ok := opts[""]; ok {
+		return v
+	}
+	return ""
+}
+
+func getPackageType(opts map[string]string) vapkg.VaPackageType {
+	if v, ok := opts["type"]; ok {
+		return vapkg.ParseVapkgType(v)
 	}
 
-	return err
+	return vapkg.GetType()
 }

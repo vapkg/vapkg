@@ -1,45 +1,48 @@
 package core
 
-import "os"
+import "vapkg/internal/workspace"
+
+type IContext interface {
+	Commands() ICommandRegistry
+	Workspace() workspace.IWorkspaceManager
+	Core() ICore
+	Logger() ILogger
+	Providers() *ProviderRegistry
+	Config() IConfig
+	Close()
+}
+
+var _ IContext = (*Context)(nil)
 
 type Context struct {
 	config    IConfig
 	core      Core
-	pwd       string
-	ws        Workspace
 	commands  CommandRegistry
 	providers ProviderRegistry
+	workspace workspace.IWorkspaceManager
 	logger    ILogger
 }
 
-func NewContext(logger ILogger, cfg IConfig) *Context {
-
-	if pwd, err := os.Getwd(); err == nil {
-
-		return &Context{
-			config:    cfg,
-			core:      CreateCore(),
-			pwd:       pwd,
-			ws:        CreateWorkspace(pwd),
-			commands:  CreateCommandRegistry(),
-			providers: CreateProviderRegistry(),
-			logger:    logger,
+func NewContext(logger ILogger, cfg IConfig) (*Context, error) {
+	wsm := workspace.NewManager()
+	if wsm.IsExist() {
+		if err := wsm.LoadWorkspace(); err != nil {
+			return nil, err
 		}
 	}
 
-	return nil
+	return &Context{
+		config:    cfg,
+		core:      CreateCore(),
+		commands:  CreateCommandRegistry(),
+		workspace: wsm,
+		providers: CreateProviderRegistry(),
+		logger:    logger,
+	}, nil
 }
 
-func (ctx *Context) Commands() *CommandRegistry {
+func (ctx *Context) Commands() ICommandRegistry {
 	return &ctx.commands
-}
-
-func (ctx *Context) Ws() *Workspace {
-	return &ctx.ws
-}
-
-func (ctx *Context) Pwd() string {
-	return ctx.pwd
 }
 
 func (ctx *Context) Core() ICore {
@@ -56,6 +59,10 @@ func (ctx *Context) Providers() *ProviderRegistry {
 
 func (ctx *Context) Config() IConfig {
 	return ctx.config
+}
+
+func (ctx *Context) Workspace() workspace.IWorkspaceManager {
+	return ctx.workspace
 }
 
 func (ctx *Context) Close() {

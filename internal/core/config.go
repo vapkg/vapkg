@@ -9,8 +9,8 @@ const (
 
 type IConfig interface {
 	LogLevel() LogType
-	LogFolder() string
-	BinFolder() string
+	LogPath() string
+	RootPath() string
 	EnvType() EnvType
-	CacheFolder() string
+	PackagePath() string
 }

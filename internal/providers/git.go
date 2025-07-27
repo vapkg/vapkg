@@ -3,30 +3,31 @@ package providers
 import (
 	"fmt"
 	"vapkg/internal/core"
+	"vapkg/internal/core/vapkg"
 )
 
-const GitHttpProviderType core.ProviderType = "http-git"
+const GitHttpProviderType vapkg.ProviderType = "http-git"
 
 const gitAttachmentPathPattern = "%s/%s/releases/download/%s/%s"
 const gitSourcePathPattern = "%s/%s/archive/refs/tags/%s.zip"
 
 type GitHttpProvider struct {
 	name string
-	data *core.VaPackageProvider
+	data *vapkg.Provider
 }
 
-func NewGitHttpProvider(name string, data *core.VaPackageProvider) *GitHttpProvider {
+func NewGitHttpProvider(name string, data *vapkg.Provider) *GitHttpProvider {
 	return &GitHttpProvider{
 		name: name,
 		data: data,
 	}
 }
 
-func NewGitHttpProviderA(name string, data *core.VaPackageProvider) core.IProvider {
+func NewGitHttpProviderA(name string, data *vapkg.Provider) core.IProvider {
 	return NewGitHttpProvider(name, data)
 }
 
-func (p *GitHttpProvider) GetType() core.ProviderType {
+func (p *GitHttpProvider) GetType() vapkg.ProviderType {
 	return GitHttpProviderType
 }
 
@@ -34,19 +35,19 @@ func (p *GitHttpProvider) GetName() string {
 	return p.name
 }
 
-func (p *GitHttpProvider) GetPath(pkg *core.VaPackageDependence) string {
+func (p *GitHttpProvider) GetPath(pkg *vapkg.Dependency) string {
 
-	if pkg.Attachment == "" {
-		return fmt.Sprintf(gitSourcePathPattern, p.data.Url, pkg.Repository, pkg.Tag)
+	if pkg.GetAttachment() == "" {
+		return fmt.Sprintf(gitSourcePathPattern, p.data.GetURL(), pkg.GetRepository(), pkg.GetTag())
 	}
 
-	return fmt.Sprintf(gitAttachmentPathPattern, p.data.Url, pkg.Repository, pkg.Tag, pkg.Attachment)
+	return fmt.Sprintf(gitAttachmentPathPattern, p.data.GetURL(), pkg.GetRepository(), pkg.GetTag(), pkg.GetAttachment())
 }
 
-func (p *GitHttpProvider) GetFile(dep *core.VaPackageDependence) string {
-	if dep.Attachment == "" {
-		return dep.Tag + ".zip"
+func (p *GitHttpProvider) GetFile(dep *vapkg.Dependency) string {
+	if dep.GetAttachment() == "" {
+		return dep.GetTag() + ".zip"
 	}
 
-	return dep.Attachment
+	return dep.GetAttachment()
 }

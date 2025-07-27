@@ -1,16 +1,16 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"vapkg/cmd/cli"
-	cfg "vapkg/config"
+	"vapkg/config"
 	"vapkg/internal/core"
 	"vapkg/internal/logger"
 	"vapkg/internal/utils"
 )
 
 func main() {
-
 	var err error
 	var args []string
 
@@ -21,17 +21,18 @@ func main() {
 		return
 	}
 
-	var cliInstance cli.Cli
-	if cliInstance = cli.Parse(args); cliInstance.Empty() {
+	var cliInstance *cli.Cli
+	if cliInstance = cli.Parse(args); cliInstance == nil || cliInstance.Empty() {
 		utils.VaPrintln("{FRD}try use {R}vapkg help {FRD}command{R}")
 		return
 	}
 
-	var ctx *core.Context
-	if ctx = getContext(cfg.Get()); ctx == nil {
-		utils.VaPrintf("{FRD}ctx init err {R}(%s)\n", err)
+	var ctx *core.Context = nil
+	if ctx, err = getContext(config.New()); err != nil {
+		utils.VaPrintf("{FRD}ctx init err {R}(%v)\n", err)
 		return
 	}
+
 	defer ctx.Close()
 
 	if !ctx.Commands().Exists(cliInstance.Command()) {
@@ -40,16 +41,18 @@ func main() {
 	}
 
 	if err = ctx.Commands().Get(cliInstance.Command()).Execute(ctx, cliInstance.Options()); err != nil {
-		utils.VaPrintfWithPrefix("%s\n", err)
+		_, _ = utils.VaPrintfWithPrefix("%s\n", err)
 		return
 	}
 }
 
-func getContext(cfg core.IConfig) (ctx *core.Context) {
+func getContext(cfg core.IConfig) (*core.Context, error) {
 	if log := getLogger(cfg); log != nil {
 
-		if ctx = core.NewContext(log, cfg); ctx != nil {
-
+		switch ctx, err := core.NewContext(log, cfg); {
+		case err != nil:
+			return nil, err
+		default:
 			for k, v := range cli.Commands() {
 				ctx.Commands().Register(k, v)
 			}
@@ -59,11 +62,12 @@ func getContext(cfg core.IConfig) (ctx *core.Context) {
 			}
 
 			log.Infof("Context initialized with %d command(s)", len(cli.Commands()))
-		}
 
+			return ctx, nil
+		}
 	}
 
-	return
+	return nil, fmt.Errorf("no context found")
 }
 
 func getLogger(cfg core.IConfig) core.ILogger {

@@ -1,22 +1,31 @@
 package core
 
+type ICommandRegistry interface {
+	Register(sig string, command ICommand)
+	Get(sig string) ICommand
+	Unregister(sig string)
+	Exists(sig string) bool
+}
+
+var _ ICommandRegistry = (*CommandRegistry)(nil)
+
 type CommandRegistry struct {
-	commands map[string]*Command
+	commands map[string]ICommand
 }
 
 func NewCommandRegistry() *CommandRegistry {
-	return &CommandRegistry{make(map[string]*Command)}
+	return &CommandRegistry{make(map[string]ICommand)}
 }
 
 func CreateCommandRegistry() CommandRegistry {
-	return CommandRegistry{make(map[string]*Command)}
+	return CommandRegistry{make(map[string]ICommand)}
 }
 
-func (registry *CommandRegistry) Register(sig string, command *Command) {
+func (registry *CommandRegistry) Register(sig string, command ICommand) {
 	registry.commands[sig] = command
 }
 
-func (registry *CommandRegistry) Get(sig string) *Command {
+func (registry *CommandRegistry) Get(sig string) ICommand {
 	return registry.commands[sig]
 }
 

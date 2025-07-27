@@ -18,13 +18,18 @@ func Create(w *os.File, logType core.LogType) Logger {
 	return Logger{writer: w, logType: logType}
 }
 
-func New(w *os.File, logType core.LogType) core.ILogger {
+func New(w *os.File, logType core.LogType) *Logger {
 	return &Logger{writer: w, logType: logType}
 }
 
-func NewActual(dir string, t core.LogType) (core.ILogger, error) {
+func NewActual(dir string, t core.LogType) (*Logger, error) {
 	var err error
 	var file *os.File
+
+	if _, err := os.Stat(dir); err != nil {
+		_ = os.MkdirAll(dir, os.ModePerm)
+	}
+
 	if file, err = os.OpenFile(path.Join(dir, core.GetActualLogFile()), os.O_APPEND|os.O_CREATE|os.O_RDWR, 0666); err != nil {
 		return nil, err
 	}
@@ -32,8 +37,8 @@ func NewActual(dir string, t core.LogType) (core.ILogger, error) {
 	return New(file, t), nil
 }
 
-func NewActualFromConfig(cfg core.IConfig) (core.ILogger, error) {
-	return NewActual(cfg.LogFolder(), cfg.LogLevel())
+func NewActualFromConfig(cfg core.IConfig) (*Logger, error) {
+	return NewActual(cfg.LogPath(), cfg.LogLevel())
 }
 
 func (l *Logger) Type() core.LogType {

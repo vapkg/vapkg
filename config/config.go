@@ -1,101 +1,62 @@
 package config
 
 import (
+	"git
 	"os"
-	"strconv"
 	"vapkg/internal/core"
 )
 
-type Container struct {
-	Bin      string       `mapstructure:"VAPKG_BIN"`
-	LogLevel core.LogType `mapstructure:"VAPKG_LOGLEVEL"`
-	Log      string       `mapstructure:"VAPKG_LOG"`
-	Env      core.EnvType `mapstructure:"VAPKG_ENV"`
-	Cache    string       `mapstructure:"VAPKG_CACHE"`
+type vapkgConfig struct {
+	RootPath    string `json:"VAPKG_ROOT,omitempty"`
+	PackagePath string `json:"VAPKG_PATH,omitempty"`
+	LogLevel    int    `json:"VAPKG_LOG_LEVEL,string,omitempty"`
+	Env         string `json:"VAPKG_ENVIRONMENT,omitempty"`
 }
 
+var _ core.IConfig = (*Config)(nil)
+
 type Config struct {
-	container Container
+	container vapkgConfig
 }
 
 // NewConfig prod by default
-func New(container Container) core.IConfig {
-	return &Config{container: container}
+func New() *Config {
+	buf := vapkgConfig{}
+
+	r := (enve.IEnveSource)(nil)
+	if f, err := os.Open("./.env"); err == nil {
+		defer f.Close()
+
+		r = enve.NewReaderSource(f)
+	}
+
+	if err := enve.Parse(&buf, r, new(enve.EnvironSource)); err != nil {
+		return nil
+	}
+
+	return &Config{buf}
 }
 
-func Get() core.IConfig {
-
-	return New(Container{
-		Bin:      GetBin(),
-		Log:      GetLog(),
-		LogLevel: GetLogType(),
-		Env:      GetEnvironment(),
-		Cache:    GetCache(),
-	})
+func (c *Config) c() *vapkgConfig {
+	return &c.container
 }
 
-func (c *Config) BinFolder() string {
-	return c.container.Bin
+func (c *Config) RootPath() string {
+	return c.c().RootPath
 }
 
-func (c *Config) LogFolder() string {
-	return c.container.Log
+func (c *Config) LogPath() string {
+	return c.c().RootPath + "/logs"
 }
 
 func (c *Config) EnvType() core.EnvType {
-	return c.container.Env
+	return core.EnvType(c.c().Env)
 }
 
 func (c *Config) LogLevel() core.LogType {
-	return c.container.LogLevel
+	return core.LogType(c.c().LogLevel)
 }
 
-func (c *Config) CacheFolder() string {
-	return c.container.Cache
-}
-
-func GetLogType() core.LogType {
-
-	if os.Getenv("VAPKG_LOGLEVEL") == "" {
-		return core.NoLog
-	}
-
-	if val, err := strconv.Atoi(os.Getenv("VAPKG_LOGLEVEL")); err == nil {
-		return core.LogType(val)
-	}
-
-	return core.InfoLog
-}
-
-func GetLog() string {
-	if val := os.Getenv("VAPKG_LOG"); val != "" {
-		return val
-	}
-
-	return "log"
-}
-
-func GetBin() string {
-
-	if val := os.Getenv("VAPKG_BIN"); val != "" {
-		return val
-	}
-
-	return "bin"
-}
-
-func GetEnvironment() core.EnvType {
-	if env := os.Getenv("VAPKG_ENV"); env == string(core.Development) {
-		return core.EnvType(env)
-	}
-
-	return core.Production
-}
-
-func GetCache() string {
-	if val := os.Getenv("VAPKG_CACHE"); val != "" {
-		return val
-	}
-
-	return "bin/vapkg"
+func (c *Config) PackagePath() string {
+	return c.c().PackagePath
 }
